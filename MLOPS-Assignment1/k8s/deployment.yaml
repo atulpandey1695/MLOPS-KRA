@@ -1,0 +1,82 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kidney-ct-classifier
+  labels:
+    app: kidney-ct-classifier
+    version: "1.0"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kidney-ct-classifier
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0   # zero-downtime rollout
+      maxSurge: 1
+  template:
+    metadata:
+      labels:
+        app: kidney-ct-classifier
+        version: "1.0"
+    spec:
+      # ── Security: drop all capabilities, run as non-root ──────
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1001
+        runAsGroup: 1001
+        fsGroup: 1001
+
+      containers:
+        - name: classifier
+          # Replace <DOCKERHUB_USERNAME> with your Docker Hub handle,
+          # or pin to a specific SHA for reproducibility:
+          #   image: <DOCKERHUB_USERNAME>/kidney-ct-classifier:sha-<commit>
+          image: atul1695/kidney-ct-classifier:latest
+          imagePullPolicy: IfNotPresent    # use local image on Minikube
+
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+
+          env:
+            - name: PYTHONUNBUFFERED
+              value: "1"
+
+          # ── Resource guardrails ──────────────────────────────
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "250m"
+            limits:
+              memory: "2Gi"     # TensorFlow + VGG16 weights in memory
+              cpu: "1000m"
+
+          # ── Health checks ────────────────────────────────────
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 8080
+            initialDelaySeconds: 30   # TF model load takes a moment
+            periodSeconds: 10
+            failureThreshold: 3
+            successThreshold: 1
+
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 8080
+            initialDelaySeconds: 60
+            periodSeconds: 20
+            failureThreshold: 3
+
+          # ── Security: read-only root filesystem ─────────────
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: false   # Flask writes inputImage.jpg
+            capabilities:
+              drop: ["ALL"]
+
+      restartPolicy: Always

@@ -1,0 +1,70 @@
+# ── Version control ───────────────────────────────────────────
+.git
+.gitignore
+.gitattributes
+
+# ── CI / CD ───────────────────────────────────────────────────
+.github/
+
+# ── Training artifacts & raw datasets ────────────────────────
+artifacts/
+logs/
+mlruns/
+scores.json
+
+# ── DVC ───────────────────────────────────────────────────────
+.dvc/
+.dvcignore
+dvc.lock
+dvc.yaml
+
+# ── Research & notebooks ──────────────────────────────────────
+research/
+
+# ── Training-only scripts ─────────────────────────────────────
+main.py
+template.py
+
+# ── Full training requirements (image uses requirements-inference.txt)
+requirements.txt
+
+# ── Kubernetes manifests ──────────────────────────────────────
+k8s/
+
+# ── Python cache & build artefacts ───────────────────────────
+**/__pycache__/
+**/*.pyc
+**/*.pyo
+**/*.pyd
+.pytest_cache/
+*.egg-info/
+src/cnnClassifier.egg-info/
+dist/
+build/
+.eggs/
+bfg.jar
+
+# ── Virtual environments ──────────────────────────────────────
+.venv/
+venv/
+env/
+.env
+
+# ── IDE / editor ──────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+*.orig
+
+# ── OS artefacts ──────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+
+# ── Raw data formats not needed for inference ─────────────────
+*.zip
+*.jpg
+*.png
+
+# NOTE: model/model.h5 is intentionally NOT excluded — the
+#       inference image requires the trained model weights.
