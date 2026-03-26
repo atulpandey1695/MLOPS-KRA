@@ -338,6 +338,11 @@ python3 -m venv ~/.kfp
 source ~/.kfp/bin/activate
 pip install kfp==2.9.0
 ```
+# Deploy the Kubeflow Pipelines
+export PIPELINE_VERSION=2.15.0
+kubectl apply -k "github.com/kubeflow/pipelines/manifests/kustomize/cluster-scoped-resources?ref=$PIPELINE_VERSION"
+kubectl wait --for condition=established --timeout=60s crd/applications.app.k8s.io
+kubectl apply -k "github.com/kubeflow/pipelines/manifests/kustomize/env/dev?ref=$PIPELINE_VERSION" 
 
 ### Step 1 — Compile the pipeline
 

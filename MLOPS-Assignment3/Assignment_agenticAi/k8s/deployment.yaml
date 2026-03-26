@@ -1,0 +1,70 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: assignment-agentic-ai-deployment
+  namespace: default
+  labels:
+    app: assignment-agentic-ai
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: assignment-agentic-ai
+  template:
+    metadata:
+      labels:
+        app: assignment-agentic-ai
+    spec:
+      containers:
+      - name: assignment-agentic-ai
+        image: assignment-agentic-ai:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8000
+          name: http
+          protocol: TCP
+        env:
+        - name: OPENAI_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: assignment-agentic-ai-secret
+              key: OPENAI_API_KEY
+        - name: OPENAI_API_BASE
+          valueFrom:
+            secretKeyRef:
+              name: assignment-agentic-ai-secret
+              key: OPENAI_API_BASE
+        - name: MODEL_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: assignment-agentic-ai-config
+              key: MODEL_NAME
+        - name: EMBEDDING_MODEL
+          valueFrom:
+            configMapKeyRef:
+              name: assignment-agentic-ai-config
+              key: EMBEDDING_MODEL
+        - name: APP_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: assignment-agentic-ai-config
+              key: APP_PORT
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "500m"
+          limits:
+            memory: "2Gi"
+            cpu: "2000m"
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 8000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 8000
+          initialDelaySeconds: 10
+          periodSeconds: 5
